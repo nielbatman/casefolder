@@ -17,6 +17,7 @@ import { FilterBar } from './components/FilterBar';
 import { FilterDrawer } from './components/FilterDrawer';
 import { CaseTable } from './components/CaseTable';
 import { CaseGrid } from './components/CaseGrid';
+import { Pagination } from './components/Pagination';
 import { CaseFormModal } from './components/CaseFormModal';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { DeleteModal } from './components/DeleteModal';
@@ -337,6 +338,23 @@ export const App: React.FC = () => {
       });
   }, [cases, filters, sortField, sortOrder]);
 
+  // Pagination State (Default 15 rows per page)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
+
+  // Reset to page 1 whenever search or filter options change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCases.length / pageSize));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedCases = useMemo(() => {
+    const start = (validCurrentPage - 1) * pageSize;
+    return filteredCases.slice(start, start + pageSize);
+  }, [filteredCases, validCurrentPage, pageSize]);
+
   const nextCaseId = useMemo(() => CaseService.getNextCaseId(cases), [cases]);
 
   // Loading Screen while verifying session
@@ -491,7 +509,7 @@ export const App: React.FC = () => {
         ) : viewMode === 'table' ? (
           <div className="hidden sm:block">
             <CaseTable
-              cases={filteredCases}
+              cases={paginatedCases}
               onViewPdf={(c) => setViewingPdfRecord(c)}
               onEditCase={(c) => {
                 setEditingRecord(c);
@@ -510,7 +528,7 @@ export const App: React.FC = () => {
         {(!isLoading && (viewMode === 'grid' || window.innerWidth < 640)) && (
           <div className={viewMode === 'table' ? 'sm:hidden' : ''}>
             <CaseGrid
-              cases={filteredCases}
+              cases={paginatedCases}
               onViewPdf={(c) => setViewingPdfRecord(c)}
               onEditCase={(c) => {
                 setEditingRecord(c);
@@ -520,6 +538,21 @@ export const App: React.FC = () => {
               onExportCase={handleExportCase}
             />
           </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!isLoading && filteredCases.length > 0 && (
+          <Pagination
+            currentPage={validCurrentPage}
+            totalPages={totalPages}
+            totalItems={filteredCases.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
         )}
 
       </main>
