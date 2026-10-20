@@ -5,15 +5,29 @@ import {
   Search,
   Clock,
   CheckCircle2,
-  ArrowUpRight,
-  ShieldAlert,
-  Sparkles
+  ArrowUpRight
 } from 'lucide-react';
 
 interface MetricsProps {
   cases: CaseRecord[];
   onSelectStatusFilter: (status: 'All' | 'Under Investigation' | 'Cleared' | 'Solved') => void;
   activeStatus: string;
+}
+
+interface MetricCardItem {
+  id: string;
+  title: string;
+  value: number;
+  subtext?: string;
+  badge: string;
+  icon: React.ElementType;
+  filterVal: 'All' | 'Under Investigation' | 'Cleared' | 'Solved';
+  accentGradient: string;
+  iconBg: string;
+  valueColor: string;
+  cornerGlow: string;
+  badgeBg: string;
+  activeRing: string;
 }
 
 export const MetricsCards: React.FC<MetricsProps> = ({
@@ -28,7 +42,7 @@ export const MetricsCards: React.FC<MetricsProps> = ({
   const cleared = activeCases.filter((c) => c.status === 'Cleared').length;
   const solved = activeCases.filter((c) => c.status === 'Solved').length;
 
-  const metrics = [
+  const metrics: MetricCardItem[] = [
     {
       id: 'all',
       title: 'Total Case Folders',

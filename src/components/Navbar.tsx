@@ -5,8 +5,7 @@ import {
   LogOut,
   UserCheck,
   Sun,
-  Moon,
-  ShieldAlert
+  Moon
 } from 'lucide-react';
 
 interface NavbarProps {
