@@ -189,11 +189,11 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                 </span>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-slate-500 flex items-center gap-1.5 font-medium flex-shrink-0 pt-0.5">
                 <Shield className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> CCPS IOC:
               </span>
-              <span className="font-bold text-blue-700 dark:text-blue-300 line-clamp-1 max-w-[170px] text-right">
+              <span className="font-bold text-blue-700 dark:text-blue-300 line-clamp-2 max-w-[180px] text-right text-xs" title={record.ioc_name}>
                 {record.ioc_name}
               </span>
             </div>

@@ -45,6 +45,11 @@ export class CaseService {
             ...item,
             pdf_attachments: Array.isArray(item.pdf_attachments) ? item.pdf_attachments : [],
           }));
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
+          } catch {
+            // ignore
+          }
           return { cases, source: 'cloud' };
         }
       } catch (err) {
@@ -158,34 +163,69 @@ export class CaseService {
 
     if (this.isSupabaseActive) {
       try {
-        await supabase
+        const { error } = await supabase
           .from('case_folders')
           .update({
             ...updates,
             updated_at: now,
           })
           .eq('id', id);
+
+        if (error && updates.case_id) {
+          await supabase
+            .from('case_folders')
+            .update({
+              ...updates,
+              updated_at: now,
+            })
+            .eq('case_id', updates.case_id);
+        }
       } catch (err) {
         console.error('Failed to update in Supabase:', err);
       }
     }
 
     const local = localStorage.getItem(STORAGE_KEY);
-    const existing: CaseRecord[] = local ? JSON.parse(local) : [];
-    const index = existing.findIndex((c) => c.id === id);
-
-    if (index === -1) {
-      throw new Error('Case record not found in CCPS ledger');
+    const existing: CaseRecord[] = local ? JSON.parse(local) : getInitialCaseDossiers();
+    
+    // Match by id OR by case_id
+    let index = existing.findIndex((c) => c.id === id);
+    if (index === -1 && updates.case_id) {
+      index = existing.findIndex((c) => c.case_id === updates.case_id);
+    }
+    if (index === -1 && id) {
+      index = existing.findIndex((c) => c.case_id === id);
     }
 
-    const updated = {
-      ...existing[index],
-      ...updates,
-      updated_at: now,
-    };
-    existing[index] = updated;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+    let updated: CaseRecord;
+    if (index !== -1) {
+      updated = {
+        ...existing[index],
+        ...updates,
+        updated_at: now,
+      };
+      existing[index] = updated;
+    } else {
+      // Upsert: Create or update safely without throwing error
+      updated = {
+        id: id || (updates.case_id ? `case-${updates.case_id}` : `ccps-${Date.now()}`),
+        case_id: updates.case_id || 'CCPS-RECORD',
+        blotter_number: updates.blotter_number || '',
+        date_committed: updates.date_committed || now.split('T')[0],
+        title: updates.title || 'Official Case Record',
+        victim_name: updates.victim_name || 'Complainant',
+        ioc_name: updates.ioc_name || 'CCPS Investigator',
+        station: updates.station || 'Caloocan City Police Station (CCPS)',
+        status: updates.status || 'Under Investigation',
+        pdf_attachments: updates.pdf_attachments || [],
+        created_at: now,
+        ...updates,
+        updated_at: now,
+      } as CaseRecord;
+      existing.unshift(updated);
+    }
 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
     return updated;
   }
 

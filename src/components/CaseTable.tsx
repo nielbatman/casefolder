@@ -272,11 +272,11 @@ export const CaseTable: React.FC<CaseTableProps> = ({
                       <Shield className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <span className="font-bold text-blue-700 dark:text-blue-300 block line-clamp-1">
+                      <span className="font-bold text-blue-700 dark:text-blue-300 block line-clamp-1" title={record.ioc_name}>
                         {record.ioc_name}
                       </span>
                       <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                        CCPS Investigator
+                        {record.ioc_name.includes(',') ? 'CCPS Investigators' : 'CCPS Investigator'}
                       </span>
                     </div>
                   </div>

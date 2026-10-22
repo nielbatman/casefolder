@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { CaseRecord, CaseStatus, PdfAttachment } from '../types/case';
+import type { CaseRecord, CaseStatus, PdfAttachment, SuspectStatus } from '../types/case';
 import { CaseService } from '../services/caseService';
 import { formatFileSize, generateOfficialCasePdf } from '../utils/pdfGenerator';
 import {
@@ -14,7 +14,9 @@ import {
   Loader2,
   Calendar,
   User,
-  PenTool
+  UserX,
+  PenTool,
+  Plus
 } from 'lucide-react';
 
 export const PNP_STANDARD_CRIMES = [
@@ -47,6 +49,32 @@ export const CCPS_IOC_ROSTER = [
   'Others',
 ] as const;
 
+export interface IocFormEntry {
+  id: string;
+  selectedIoc: string;
+  customIoc: string;
+}
+
+export const parseIocsFromRecord = (raw?: string): IocFormEntry[] => {
+  if (!raw || !raw.trim()) {
+    return [{ id: 'ioc-1', selectedIoc: 'PMSg Rodriguez', customIoc: '' }];
+  }
+  // Split by comma, slash, or semicolon
+  const parts = raw.split(/[,;/]+/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) {
+    return [{ id: 'ioc-1', selectedIoc: 'PMSg Rodriguez', customIoc: '' }];
+  }
+  return parts.map((name, idx) => {
+    const matched = CCPS_IOC_ROSTER.find(
+      (r) => r !== 'Others' && r.toLowerCase() === name.toLowerCase()
+    );
+    if (matched) {
+      return { id: `ioc-${idx + 1}`, selectedIoc: matched, customIoc: '' };
+    }
+    return { id: `ioc-${idx + 1}`, selectedIoc: 'Others', customIoc: name };
+  });
+};
+
 interface CaseFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -74,10 +102,13 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
   const [customCrimeInput, setCustomCrimeInput] = useState<string>('');
 
   const [victimName, setVictimName] = useState('');
+  const [suspectName, setSuspectName] = useState('');
+  const [suspectStatus, setSuspectStatus] = useState<SuspectStatus>('At Large');
   
-  // IOC Dropdown + "Others" custom input
-  const [selectedIoc, setSelectedIoc] = useState<string>('PMSg Rodriguez');
-  const [customIocInput, setCustomIocInput] = useState<string>('');
+  // Multiple IOC Support (Investigator-on-Case list)
+  const [iocList, setIocList] = useState<IocFormEntry[]>([
+    { id: 'ioc-1', selectedIoc: 'PMSg Rodriguez', customIoc: '' },
+  ]);
 
   const [status, setStatus] = useState<CaseStatus>('Under Investigation');
   const [summary, setSummary] = useState('');
@@ -94,6 +125,56 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handlers for dynamic multiple IOCs
+  const handleAddIoc = () => {
+    const selectedValues = new Set(iocList.map((item) => item.selectedIoc));
+    const nextAvailable =
+      CCPS_IOC_ROSTER.find((officer) => officer !== 'Others' && !selectedValues.has(officer)) ||
+      'PMSg Rodriguez';
+    setIocList((prev) => [
+      ...prev,
+      {
+        id: `ioc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        selectedIoc: nextAvailable,
+        customIoc: '',
+      },
+    ]);
+  };
+
+  const handleRemoveIoc = (id: string) => {
+    if (iocList.length <= 1) return;
+    setIocList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleUpdateIoc = (id: string, field: 'selectedIoc' | 'customIoc', value: string) => {
+    setIocList((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, [field]: value };
+        }
+        return item;
+      })
+    );
+    if (formErrors.iocName) {
+      setFormErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.iocName;
+        return copy;
+      });
+    }
+  };
+
+  const getResolvedIocNames = (): string[] => {
+    return iocList
+      .map((item) => (item.selectedIoc === 'Others' ? item.customIoc.trim() : item.selectedIoc.trim()))
+      .filter(Boolean);
+  };
+
+  const getFinalIocString = (): string => {
+    const names = getResolvedIocNames();
+    return names.join(', ');
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -115,18 +196,9 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
         }
 
         setVictimName(editRecord.victim_name);
-
-        // Determine if ioc_name is in CCPS_IOC_ROSTER or custom
-        const matchedIoc = CCPS_IOC_ROSTER.find(
-          (r) => r !== 'Others' && r.toLowerCase() === (editRecord.ioc_name || '').trim().toLowerCase()
-        );
-        if (matchedIoc) {
-          setSelectedIoc(matchedIoc);
-          setCustomIocInput('');
-        } else {
-          setSelectedIoc('Others');
-          setCustomIocInput(editRecord.ioc_name || '');
-        }
+        setSuspectName(editRecord.suspect_name || '');
+        setSuspectStatus(editRecord.suspect_status || 'At Large');
+        setIocList(parseIocsFromRecord(editRecord.ioc_name));
 
         setStatus(editRecord.status);
         setSummary(editRecord.summary || '');
@@ -139,8 +211,9 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
         setSelectedCrime('ROBBERY');
         setCustomCrimeInput('');
         setVictimName('');
-        setSelectedIoc('PMSg Rodriguez');
-        setCustomIocInput('');
+        setSuspectName('');
+        setSuspectStatus('At Large');
+        setIocList([{ id: `ioc-init-${Date.now()}`, selectedIoc: 'PMSg Rodriguez', customIoc: '' }]);
         setStatus('Under Investigation');
         setSummary('');
         setExistingAttachments([]);
@@ -208,7 +281,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
   // Generate Official PNP CCPS Case Folder PDF
   const handleGenerateOfficialCcpsPdf = () => {
     const finalTitle = selectedCrime === 'OTHERS' ? (customCrimeInput || 'UNSPECIFIED OFFENSE') : selectedCrime;
-    const finalIoc = selectedIoc === 'Others' ? (customIocInput.trim() || 'CCPS Investigator') : selectedIoc;
+    const finalIoc = getFinalIocString() || 'CCPS Investigator';
 
     const pdfBlob = generateOfficialCasePdf({
       caseId: caseId || 'CCPS-2026-TEMP',
@@ -216,6 +289,8 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
       title: finalTitle,
       dateCommitted: dateCommitted || new Date().toISOString().split('T')[0],
       victimName: victimName || 'Complainant / Victim',
+      suspectName: suspectName.trim() || undefined,
+      suspectStatus: suspectStatus,
       iocName: finalIoc,
       status,
       summary: summary || 'Operatives of Caloocan City Police Station responded to the incident scene and conducted initial investigation.',
@@ -257,16 +332,15 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
 
     if (!victimName.trim()) errors.victimName = 'Name of Complainant / Victim is required';
     
-    if (selectedIoc === 'Others') {
-      if (!customIocInput.trim()) {
-        errors.iocName = 'Please manually enter the Rank and Name of the IOC';
-      }
+    // Validate IOCs
+    const emptyCustomIoc = iocList.some((item) => item.selectedIoc === 'Others' && !item.customIoc.trim());
+    if (emptyCustomIoc) {
+      errors.iocName = 'Please enter the Rank and Name of each custom IOC';
+    } else if (getResolvedIocNames().length === 0) {
+      errors.iocName = 'Please select or enter at least one Investigator-on-Case';
     }
 
-    const totalAttachments = existingAttachments.length + newAttachments.length;
-    if (totalAttachments === 0) {
-      errors.pdf = 'Please upload a PDF Case Folder';
-    }
+    // PDF is optional; if none is attached, official CCPS docket PDF will be auto-generated upon save
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -282,11 +356,40 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
         ? customCrimeInput.trim().toUpperCase()
         : selectedCrime;
 
-      const finalIoc = selectedIoc === 'Others'
-        ? customIocInput.trim()
-        : selectedIoc;
+      const finalIoc = getFinalIocString();
 
-      const allAttachments = [...existingAttachments, ...newAttachments];
+      let allAttachments = [...existingAttachments, ...newAttachments];
+      let newPdfsToUpload = [...newAttachments];
+
+      // Auto-generate official docket PDF if case has no attachments yet
+      if (allAttachments.length === 0) {
+        const generatedBlob = generateOfficialCasePdf({
+          caseId: caseId || 'CCPS-TEMP',
+          blotterNumber: blotterNumber || 'IRF-CCPS-PENDING',
+          title: finalTitle,
+          dateCommitted: dateCommitted || new Date().toISOString().split('T')[0],
+          victimName: victimName || 'Complainant / Victim',
+          suspectName: suspectName.trim() || undefined,
+          suspectStatus: suspectStatus,
+          iocName: finalIoc || 'CCPS Investigator',
+          status,
+          summary: summary || 'Official case docket recorded at Caloocan City Police Station (CCPS).',
+        });
+        const objectUrl = URL.createObjectURL(generatedBlob);
+        const autoAttachment: PdfAttachment = {
+          id: `gen-auto-pdf-${Date.now()}`,
+          name: `${caseId || 'CCPS'}_PNP_Case_Folder_Docket.pdf`,
+          size: generatedBlob.size,
+          uploaded_at: new Date().toISOString(),
+          url: objectUrl,
+          page_count: 1,
+          mime_type: 'application/pdf',
+          document_type: 'General Case Folder',
+        };
+        allAttachments = [autoAttachment];
+        newPdfsToUpload = [autoAttachment];
+      }
+
       await onSave(
         {
           case_id: caseId.trim(),
@@ -294,6 +397,8 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
           title: finalTitle,
           date_committed: dateCommitted,
           victim_name: victimName.trim(),
+          suspect_name: suspectName.trim() || undefined,
+          suspect_status: suspectStatus,
           ioc_name: finalIoc,
           station: 'Caloocan City Police Station (CCPS)',
           status,
@@ -301,7 +406,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
           summary: summary.trim(),
           pdf_attachments: allAttachments,
         },
-        newAttachments
+        newPdfsToUpload
       );
       onClose();
     } catch (err: unknown) {
@@ -449,25 +554,57 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
             )}
           </div>
 
-          {/* Row 4: Name of Victim & Name of IOC */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-slate-400" />
-                <span>Name of Victim / Complainant</span> <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={victimName}
-                onChange={(e) => setVictimName(e.target.value)}
-                placeholder="e.g. Clarissa Tan y Mendoza, People of the Philippines"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950"
-              />
-              {formErrors.victimName && (
-                <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> {formErrors.victimName}
-                </p>
-              )}
+          {/* Row 4: Name of Victim, Suspect & Name of IOC */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+            {/* Left Column: Victim & Suspect (placed exactly where user indicated) */}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Name of Victim / Complainant</span> <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={victimName}
+                  onChange={(e) => setVictimName(e.target.value)}
+                  placeholder="e.g. Clarissa Tan y Mendoza, People of the Philippines"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950"
+                />
+                {formErrors.victimName && (
+                  <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> {formErrors.victimName}
+                  </p>
+                )}
+              </div>
+
+              {/* Name of Suspect / Respondent (Optional) */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <UserX className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Name of Suspect / Respondent</span> <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={suspectName}
+                    onChange={(e) => setSuspectName(e.target.value)}
+                    placeholder="e.g. Danilo Santos y Castro @ 'Danny', Unidentified"
+                    className="sm:col-span-2 w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950"
+                  />
+                  <select
+                    value={suspectStatus}
+                    onChange={(e) => setSuspectStatus(e.target.value as SuspectStatus)}
+                    className="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 cursor-pointer shadow-xs"
+                    title="Suspect Status"
+                  >
+                    <option value="At Large">At Large</option>
+                    <option value="Arrested / Inquested">Arrested</option>
+                    <option value="Detained at CCPS">Detained</option>
+                    <option value="Referred to Prosecutor">Referred</option>
+                    <option value="Unknown">Unknown</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -476,56 +613,63 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
                 <span>Name of IOC (Investigator-on-Case)</span> <span className="text-rose-500">*</span>
               </label>
 
-              <select
-                value={selectedIoc}
-                onChange={(e) => {
-                  setSelectedIoc(e.target.value);
-                  if (e.target.value !== 'Others') {
-                    setFormErrors((prev) => {
-                      const copy = { ...prev };
-                      delete copy.iocName;
-                      return copy;
-                    });
-                  }
-                }}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 shadow-xs cursor-pointer"
-              >
-                {CCPS_IOC_ROSTER.map((officer) => (
-                  <option
-                    key={officer}
-                    value={officer}
-                    className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-medium py-1"
-                  >
-                    {officer}
-                  </option>
-                ))}
-              </select>
+              {/* Clean stacked IOC dropdowns */}
+              <div className="space-y-2">
+                {iocList.map((iocItem) => (
+                  <div key={iocItem.id} className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={iocItem.selectedIoc}
+                        onChange={(e) => handleUpdateIoc(iocItem.id, 'selectedIoc', e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 shadow-xs cursor-pointer"
+                      >
+                        {CCPS_IOC_ROSTER.map((officer) => (
+                          <option
+                            key={officer}
+                            value={officer}
+                            className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-medium py-1"
+                          >
+                            {officer}
+                          </option>
+                        ))}
+                      </select>
 
-              {/* Pop-out manual input box when "Others" is selected */}
-              {selectedIoc === 'Others' && (
-                <div className="mt-2.5">
-                  <input
-                    type="text"
-                    value={customIocInput}
-                    onChange={(e) => {
-                      setCustomIocInput(e.target.value);
-                      if (e.target.value.trim()) {
-                        setFormErrors((prev) => {
-                          const copy = { ...prev };
-                          delete copy.iocName;
-                          return copy;
-                        });
-                      }
-                    }}
-                    placeholder="Enter Rank and Name of IOC (e.g. PCpl Juan Dela Cruz)..."
-                    className="w-full px-3.5 py-2 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-700/80 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 shadow-inner"
-                    autoFocus
-                  />
-                  <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium mt-1 block">
-                    Please manually enter the name of the assigned Investigator-on-Case.
-                  </span>
-                </div>
-              )}
+                      {iocList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveIoc(iocItem.id)}
+                          className="p-2.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer flex-shrink-0"
+                          title="Remove this IOC"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Pop-out manual input box when "Others" is selected */}
+                    {iocItem.selectedIoc === 'Others' && (
+                      <input
+                        type="text"
+                        value={iocItem.customIoc}
+                        onChange={(e) => handleUpdateIoc(iocItem.id, 'customIoc', e.target.value)}
+                        placeholder="Enter Rank and Name of IOC (e.g. PCpl Juan Dela Cruz)..."
+                        className="w-full px-3.5 py-2 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-700/80 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 shadow-inner"
+                        autoFocus
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Single, simple Add IOC button */}
+              <button
+                type="button"
+                onClick={handleAddIoc}
+                className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 dark:hover:border-blue-400 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add IOC</span>
+              </button>
 
               {formErrors.iocName && (
                 <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 flex items-center gap-1">
@@ -569,7 +713,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
           <div className="pt-1">
             <div className="mb-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                PDF Case Folder Attachment <span className="text-rose-500">*</span>
+                PDF Case Folder Attachment <span className="text-slate-400 font-normal lowercase">(optional - auto-generated if empty)</span>
               </label>
             </div>
 

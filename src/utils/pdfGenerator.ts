@@ -99,7 +99,7 @@ BT
 0 -15 Td
 (Suspect / Respondent:       ${suspect} [Status: ${suspectStatus}]) Tj
 0 -15 Td
-(Investigator-on-Case (IOC): ${ioc}) Tj
+(Investigator(s)-on-Case (IOC): ${ioc}) Tj
 0 -15 Td
 (Prosecutor Transmittal Ref: ${prosDocket}) Tj
 ET
@@ -158,7 +158,7 @@ BT
 (${ioc}) Tj
 /F2 7.5 Tf
 0 -10 Td
-(Investigator-on-Case [IOC]) Tj
+(${ioc.includes(',') ? 'Investigators-on-Case [IOC]' : 'Investigator-on-Case [IOC]'}) Tj
 0 -9 Td
 (Caloocan CPS - SIDMB) Tj
 

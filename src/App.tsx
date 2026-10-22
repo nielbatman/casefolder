@@ -24,6 +24,7 @@ import { DeleteModal } from './components/DeleteModal';
 import { SupabaseModal } from './components/SupabaseModal';
 import { ToastContainer } from './components/Toast';
 import { LoginPage } from './components/LoginPage';
+import { Footer } from './components/Footer';
 import { supabase } from './lib/supabase';
 import { 
   Plus, 
@@ -556,6 +557,9 @@ export const App: React.FC = () => {
         )}
 
       </main>
+
+      {/* Slim Professional CCPS Police Footer */}
+      <Footer />
 
       {/* Mobile Bottom Navigation Bar */}
       <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-slate-800/90 px-6 py-2 flex items-center justify-around shadow-lg">

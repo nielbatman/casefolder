@@ -106,7 +106,7 @@ export const MetricsCards: React.FC<MetricsProps> = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 my-3.5">
       {metrics.map((m) => {
         const Icon = m.icon;
         const isSelected = activeStatus === m.filterVal;
@@ -115,61 +115,52 @@ export const MetricsCards: React.FC<MetricsProps> = ({
           <button
             key={m.id}
             onClick={() => onSelectStatusFilter(m.filterVal)}
-            className={`group relative text-left rounded-2xl bg-white/95 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 transition-all duration-300 cursor-pointer overflow-hidden card-hover-lift shadow-sm hover:shadow-xl ${isSelected ? m.activeRing : 'hover:border-slate-300 dark:hover:border-slate-700'
+            className={`group relative text-left rounded-xl bg-white/95 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 transition-all duration-300 cursor-pointer overflow-hidden card-hover-lift shadow-xs hover:shadow-md ${isSelected ? m.activeRing : 'hover:border-slate-300 dark:hover:border-slate-700'
               }`}
           >
             {/* Top vibrant gradient color bar */}
-            <div className={`h-1.5 w-full bg-gradient-to-r ${m.accentGradient}`} />
+            <div className={`h-1 w-full bg-gradient-to-r ${m.accentGradient}`} />
 
             {/* Corner ambient glow sphere */}
             <div
-              className={`absolute top-0 right-0 w-28 h-28 rounded-full ${m.cornerGlow} blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500`}
+              className={`absolute top-0 right-0 w-20 h-20 rounded-full ${m.cornerGlow} blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500`}
             />
 
-            <div className="p-4 sm:p-5 flex flex-col justify-between h-full relative z-10">
-              {/* Header row: Title + Glowing Icon Box */}
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div>
-                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-0.5">
+            <div className="p-3 sm:p-3.5 flex flex-col justify-between relative z-10">
+              {/* Header row: Title + Badge + Compact Icon Box */}
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <div className="min-w-0 pr-1">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block truncate">
                     {m.title}
                   </span>
                   <span
-                    className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${m.badgeBg}`}
+                    className={`inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded-md border mt-0.5 ${m.badgeBg}`}
                   >
                     {m.badge}
                   </span>
                 </div>
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 ${m.iconBg}`}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shadow-xs flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${m.iconBg}`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
 
-              {/* Number and Subtext */}
-              <div className="mt-2">
-                <div className="flex items-baseline justify-between">
-                  <div className={`text-3xl sm:text-4xl font-black tracking-tight ${m.valueColor}`}>
-                    {m.value}
-                  </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
+              {/* Number and Arrow */}
+              <div className="flex items-baseline justify-between mt-0.5">
+                <div className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${m.valueColor}`}>
+                  {m.value}
                 </div>
-                {m.subtext && (
-                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                    {m.subtext}
-                  </div>
-                )}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
               </div>
 
-              {/* Bottom active status indicator pill */}
+              {/* Active status indicator dot */}
               {isSelected && (
-                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-semibold text-blue-600 dark:text-blue-400">
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
-                  </span>
-                  {/* <span className="text-[10px] text-slate-400">Click to reset</span> */}
+                <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span>Filtered</span>
                 </div>
               )}
             </div>
