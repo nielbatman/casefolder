@@ -168,9 +168,8 @@ export const MetricsCards: React.FC<MetricsProps> = ({
                 <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-semibold text-blue-600 dark:text-blue-400">
                   <span className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
-                    Currently Filtering
                   </span>
-                  <span className="text-[10px] text-slate-400">Click to reset</span>
+                  {/* <span className="text-[10px] text-slate-400">Click to reset</span> */}
                 </div>
               )}
             </div>
