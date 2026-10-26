@@ -103,14 +103,14 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
 
   const [victimName, setVictimName] = useState('');
   const [suspectName, setSuspectName] = useState('');
-  const [suspectStatus, setSuspectStatus] = useState<SuspectStatus>('At Large');
-  
+  const [suspectStatus, setSuspectStatus] = useState<SuspectStatus>('Arrested / Inquested');
+
   // Multiple IOC Support (Investigator-on-Case list)
   const [iocList, setIocList] = useState<IocFormEntry[]>([
     { id: 'ioc-1', selectedIoc: 'PMSg Rodriguez', customIoc: '' },
   ]);
 
-  const [status, setStatus] = useState<CaseStatus>('Under Investigation');
+  const [status, setStatus] = useState<CaseStatus>('Solved');
   const [summary, setSummary] = useState('');
 
   // PDF Attachments State
@@ -205,16 +205,16 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
         setExistingAttachments(editRecord.pdf_attachments || []);
         setNewAttachments([]);
       } else {
-        setCaseId(nextCaseId);
-        setBlotterNumber(`IRF-CCPS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
+        setCaseId('');
+        setBlotterNumber('');
         setDateCommitted(new Date().toISOString().split('T')[0]);
         setSelectedCrime('ROBBERY');
         setCustomCrimeInput('');
         setVictimName('');
         setSuspectName('');
-        setSuspectStatus('At Large');
+        setSuspectStatus('Arrested / Inquested');
         setIocList([{ id: `ioc-init-${Date.now()}`, selectedIoc: 'PMSg Rodriguez', customIoc: '' }]);
-        setStatus('Under Investigation');
+        setStatus('Solved');
         setSummary('');
         setExistingAttachments([]);
         setNewAttachments([]);
@@ -331,7 +331,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
     }
 
     if (!victimName.trim()) errors.victimName = 'Name of Complainant / Victim is required';
-    
+
     // Validate IOCs
     const emptyCustomIoc = iocList.some((item) => item.selectedIoc === 'Others' && !item.customIoc.trim());
     if (emptyCustomIoc) {
@@ -433,7 +433,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-500" />
               <span className="text-[11px] font-mono uppercase text-blue-600 dark:text-blue-400 font-bold">
-                CALOOCAN CITY POLICE STATION • SIDMB
+                CALOOCAN CITY POLICE STATION • SIDMS
               </span>
             </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mt-0.5">
@@ -463,7 +463,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
                 type="text"
                 value={caseId}
                 onChange={(e) => setCaseId(e.target.value)}
-                placeholder="e.g. CCPS-2026-001"
+                placeholder="XV-02-INQ-26A-00001"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950"
               />
               {formErrors.caseId && (
@@ -481,7 +481,7 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
                 type="text"
                 value={blotterNumber}
                 onChange={(e) => setBlotterNumber(e.target.value)}
-                placeholder="e.g. IRF-CCPS-2026-10-0492"
+                placeholder="2026-01-001"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950"
               />
             </div>
@@ -597,8 +597,8 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
                     className="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 cursor-pointer shadow-xs"
                     title="Suspect Status"
                   >
-                    <option value="At Large">At Large</option>
                     <option value="Arrested / Inquested">Arrested</option>
+                    <option value="At Large">At Large</option>
                     <option value="Detained at CCPS">Detained</option>
                     <option value="Referred to Prosecutor">Referred</option>
                     <option value="Unknown">Unknown</option>
@@ -724,8 +724,8 @@ export const CaseFormModal: React.FC<CaseFormModalProps> = ({
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`relative border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-200 ${isDragging
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 scale-[1.01]'
-                  : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500 bg-slate-50/80 hover:bg-slate-100/80 dark:bg-slate-950/40 dark:hover:bg-slate-950/70'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 scale-[1.01]'
+                : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500 bg-slate-50/80 hover:bg-slate-100/80 dark:bg-slate-950/40 dark:hover:bg-slate-950/70'
                 }`}
             >
               <input

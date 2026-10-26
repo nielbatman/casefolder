@@ -28,17 +28,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/90 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/90 backdrop-blur-xl transition-all shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18 py-2.5 gap-3">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 w-full border-b border-slate-200/90 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/90 backdrop-blur-xl transition-all shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between min-h-[72px] py-2.5 gap-3">
 
           {/* PNP Caloocan City Police Station Official Identity */}
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-white border-2 border-amber-400 dark:border-amber-500/80 shadow-md shadow-amber-500/10 p-1.5 overflow-hidden">
-              <img 
-                src="/folder.png" 
-                alt="CCPS Case Folder Icon" 
-                className="w-full h-full object-contain" 
+              <img
+                src="/folder.png"
+                alt="CCPS Case Folder Icon"
+                className="w-full h-full object-contain"
               />
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-950 rounded-full" />
             </div>
@@ -53,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
-                Station Investigation and Detective Management Branch (SIDMB) • E-Case Folder
+                E-Case Folder
               </p>
             </div>
           </div>
@@ -111,5 +112,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
     </header>
+    {/* Matching spacer so page content is not hidden beneath fixed navbar */}
+    <div className="min-h-[72px] w-full shrink-0" aria-hidden="true" />
+  </>
   );
 };

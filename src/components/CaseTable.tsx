@@ -120,7 +120,7 @@ export const CaseTable: React.FC<CaseTableProps> = ({
           <FileText className="w-7 h-7" />
         </div>
         <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white mb-1">
-          No CCPS Case Dockets Found
+          No CCPS Case Folder Found
         </h3>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           No matching Caloocan City Police Station cases. Clear filters or create a new case docket using the button above.

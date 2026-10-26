@@ -85,8 +85,8 @@ export class CaseService {
   }
 
   public static getNextCaseId(existingCases: CaseRecord[]): string {
-    const currentYear = new Date().getFullYear();
-    const prefix = `CCPS-${currentYear}-`;
+    const yearShort = new Date().getFullYear().toString().slice(-2);
+    const prefix = `XV-02-INQ-${yearShort}A-`;
     const sequenceNumbers = existingCases
       .map((c) => {
         if (c.case_id.startsWith(prefix)) {
@@ -99,7 +99,7 @@ export class CaseService {
 
     const maxSeq = sequenceNumbers.length > 0 ? Math.max(...sequenceNumbers) : existingCases.length;
     const nextSeq = maxSeq + 1;
-    return `${prefix}${String(nextSeq).padStart(3, '0')}`;
+    return `${prefix}${String(nextSeq).padStart(5, '0')}`;
   }
 
   public static async createCase(caseData: Omit<CaseRecord, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>): Promise<CaseRecord> {

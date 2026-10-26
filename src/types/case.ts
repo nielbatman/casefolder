@@ -16,8 +16,8 @@ export interface PdfAttachment {
 
 export interface CaseRecord {
   id: string;
-  case_id: string; // e.g., 'CCPS-2026-001'
-  blotter_number?: string; // PNP IRF / Blotter Entry (e.g., 'IRF-CCPS-2026-1042')
+  case_id: string; // e.g., 'XV-02-INQ-26A-00001'
+  blotter_number?: string; // PNP IRF / Blotter Entry (e.g., '2026-01-001')
   date_committed: string; // YYYY-MM-DD
   time_committed?: string; // e.g., '21:30H'
   title: string; // Case Title / Charge (e.g., 'Robbery with Homicide (RPC Art. 294)')

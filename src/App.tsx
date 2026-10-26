@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import type { 
-  CaseRecord, 
-  CaseFilter, 
-  ViewMode, 
-  SortField, 
-  SortOrder, 
+import type {
+  CaseRecord,
+  CaseFilter,
+  ViewMode,
+  SortField,
+  SortOrder,
   ToastMessage,
-  PdfAttachment 
+  PdfAttachment
 } from './types/case';
 import { CaseService } from './services/caseService';
 import { exportSingleCaseDocket } from './utils/exportUtils';
@@ -26,11 +26,11 @@ import { ToastContainer } from './components/Toast';
 import { LoginPage } from './components/LoginPage';
 import { Footer } from './components/Footer';
 import { supabase } from './lib/supabase';
-import { 
-  Plus, 
-  FolderKanban, 
-  SlidersHorizontal, 
-  Database, 
+import {
+  Plus,
+  FolderKanban,
+  SlidersHorizontal,
+  Database,
   Loader2
 } from 'lucide-react';
 
@@ -361,9 +361,8 @@ export const App: React.FC = () => {
   // Loading Screen while verifying session
   if (isAuthChecking) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-200 ${
-        theme === 'dark' ? 'bg-[#0B0F17] text-white' : 'bg-[#F8FAFC] text-slate-800'
-      }`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-200 ${theme === 'dark' ? 'bg-[#0B0F17] text-white' : 'bg-[#F8FAFC] text-slate-800'
+        }`}>
         <div className="w-16 h-16 rounded-2xl bg-white border-2 border-blue-500 p-2.5 shadow-xl animate-pulse flex items-center justify-center mb-4">
           <img src="/folder.png" alt="CCPS Logo" className="w-full h-full object-contain" />
         </div>
@@ -391,9 +390,8 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 relative overflow-x-hidden ${
-      theme === 'dark' ? 'bg-[#0B0F17] text-slate-100 aurora-bg-dark' : 'bg-[#F8FAFC] text-slate-900 aurora-bg-light'
-    }`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 relative overflow-x-clip ${theme === 'dark' ? 'bg-[#0B0F17] text-slate-100 aurora-bg-dark' : 'bg-[#F8FAFC] text-slate-900 aurora-bg-light'
+      }`}>
       {/* Subtle micro-dot pattern for tactical depth */}
       <div className="fixed inset-0 bg-mesh-pattern pointer-events-none opacity-40 dark:opacity-20" />
 
@@ -420,12 +418,12 @@ export const App: React.FC = () => {
 
       {/* Main CCPS Command Dashboard */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 relative z-10 pb-24 sm:pb-12">
-        
+
         {/* Caloocan City Police Station Official Command Header Card */}
         <div className="rounded-3xl p-5 sm:p-6 bg-white/90 dark:bg-slate-900/85 backdrop-blur-2xl border border-slate-200/90 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden mb-6">
           {/* Decorative vibrant police gradient top edge */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500" />
-          
+
           {/* Ambient subtle badge watermark */}
           <div className="absolute -right-8 -bottom-8 w-44 h-44 opacity-5 dark:opacity-10 pointer-events-none">
             <img src="/folder.png" alt="" className="w-full h-full object-contain" />
@@ -440,19 +438,19 @@ export const App: React.FC = () => {
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">•</span>
                 <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Northern Police District • Caloocan HQ
+                  Northern Police District
                 </span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                 <span className="text-gradient-police">Caloocan City Police Station</span>
-                <span className="text-xs sm:text-sm font-extrabold px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800 shadow-xs">
+                {/* <span className="text-xs sm:text-sm font-extrabold px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800 shadow-xs">
                   IOC Case Folders
-                </span>
+                </span> */}
               </h1>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-3xl leading-relaxed">
-                Electronic Case Folder for Investigators-on-Case (IOC) • Station Investigation &amp; Detective Management Branch (SIDMB).
+                Electronic Case Folder for Investigators-on-Case (IOC)
               </p>
             </div>
 
@@ -464,7 +462,7 @@ export const App: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                 </span>
                 <div>
-                  <span className="font-extrabold text-slate-900 dark:text-white block">CCPS SIDMB: Online</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white block">Online</span>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">E-Case Folder System</span>
                 </div>
               </div>

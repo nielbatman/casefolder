@@ -65,9 +65,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className={`min-h-screen text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0B0F17] aurora-bg-dark' : 'bg-[#F8FAFC] aurora-bg-light'
-    }`}>
+    <div className={`min-h-screen text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0B0F17] aurora-bg-dark' : 'bg-[#F8FAFC] aurora-bg-light'
+      }`}>
       {/* Background Ambient Mesh & Rich Glows */}
       <div className="fixed inset-0 bg-mesh-pattern pointer-events-none opacity-40 dark:opacity-20" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[450px] h-[450px] bg-blue-500/15 dark:bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -118,7 +117,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               Caloocan City Police Station
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              SIDMB • Investigator-on-Case
+              E-Case Folder • Investigator-on-Case
             </p>
           </div>
 
@@ -138,7 +137,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             {/* Email Field */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Email / Police Account
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
@@ -149,7 +148,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. ioc.dalisay@pnp.gov.ph"
+                  placeholder="e.g. ioc.dalisay@example.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-950 focus:border-transparent transition-all"
                 />
               </div>
@@ -195,7 +194,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </>
               ) : (
                 <>
-                  <span>Sign In to Terminal</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -205,7 +204,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           {/* Official Security Footer */}
           <div className="mt-6 pt-3 text-center border-t border-slate-200 dark:border-slate-800/60">
             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono uppercase tracking-wider">
-              OFFICIAL USE ONLY • CCPS SIDMB E-CASE LEDGER
+              OFFICIAL USE ONLY • CCPS SIDMS E-CASE FOLDER
             </p>
           </div>
 
